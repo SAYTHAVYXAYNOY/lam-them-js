@@ -1,0 +1,39 @@
+// Import Express và MongoDB
+const express = require('express');
+const mongoose = require('mongoose');
+
+// Khởi tạo ứng dụng Express
+const app = express();
+
+// Kết nối đến cơ sở dữ liệu MongoDB
+mongoose.connect('mongodb://localhost:27017/myapp', { useNewUrlParser: true, useUnifiedTopology: true });
+const db = mongoose.connection;
+
+// Định nghĩa schema và model cho sản phẩm
+const productSchema = new mongoose.Schema({
+    name: String,
+    price: Number,
+    description: String
+});
+const Product = mongoose.model('Product', productSchema);
+
+// Endpoint để xoá sản phẩm dựa trên ID
+app.delete('/products/:productId', async (req, res) => {
+    try {
+        const productId = req.params.productId;
+        const deletedProduct = await Product.findByIdAndDelete(productId);
+        if (!deletedProduct) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+        return res.status(200).json({ message: 'Product deleted successfully' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// Khởi động server và lắng nghe các yêu cầu
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
